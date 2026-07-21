@@ -12,6 +12,8 @@ export interface Tile {
 
 export type Board = readonly (Tile | null)[]
 export type Phase = 'placement' | 'sliding' | 'finished'
+export type TileRotation = 0 | 1 | 2 | 3
+export type RotationDirection = 'clockwise' | 'counterclockwise'
 
 export interface GameState {
   readonly phase: Phase
@@ -20,6 +22,7 @@ export interface GameState {
   readonly visibleTiles: readonly Tile[]
   readonly drawPile: readonly Tile[]
   readonly selectedDraftIndex: number | null
+  readonly selectedRotation: TileRotation
   readonly slidesRemaining: number
   readonly message: string
 }

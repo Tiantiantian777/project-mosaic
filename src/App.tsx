@@ -9,11 +9,12 @@ import {
   finishGame,
   isPersistedGameState,
   placeSelectedTile,
+  rotateSelectedDraftTile,
   selectDraftTile,
   slideTile,
 } from './engine'
 
-const STORAGE_KEY = 'project-mosaic-state-v02'
+const STORAGE_KEY = 'project-mosaic-state-v03'
 const DEFAULT_SEED = 20260719
 
 function loadSavedGame(): GameState {
@@ -65,7 +66,11 @@ function App() {
         <TileSelection
           tiles={game.visibleTiles}
           selectedIndex={game.selectedDraftIndex}
+          selectedRotation={game.selectedRotation}
           onSelect={(index) => setGame((state) => selectDraftTile(state, index))}
+          onRotate={(direction) =>
+            setGame((state) => rotateSelectedDraftTile(state, direction))
+          }
         />
       )}
 
@@ -128,8 +133,8 @@ function App() {
       </section>
 
       <footer>
-        Progress is saved on this device. Tiles never rotate, overlap, or leave
-        their large board slots.
+        Progress is saved on this device. Draft tiles may rotate before
+        placement; placed tiles lock and never rotate afterward.
       </footer>
     </main>
   )

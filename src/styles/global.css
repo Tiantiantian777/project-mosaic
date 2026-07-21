@@ -201,6 +201,63 @@ h2 {
   text-transform: uppercase;
 }
 
+.rotation-controls {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 11px;
+  margin-top: 13px;
+  padding: 11px;
+  border: 1px solid #343d50;
+  border-radius: 16px;
+  background: #10151e;
+}
+
+.rotation-button {
+  width: 48px;
+  height: 48px;
+  border: 1px solid #596886;
+  border-radius: 50%;
+  background: #242c3b;
+  color: #f5f7fb;
+  font-size: 1.45rem;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    transform 140ms ease;
+}
+
+.rotation-button:hover {
+  border-color: #b7c3ff;
+}
+
+.rotation-button:active {
+  transform: scale(0.94);
+}
+
+.rotation-copy {
+  min-width: 0;
+  text-align: center;
+}
+
+.rotation-copy strong,
+.rotation-copy span {
+  display: block;
+}
+
+.rotation-copy strong {
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rotation-copy span {
+  margin-top: 3px;
+  color: #8e99ad;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
 .mosaic-tile {
   display: grid;
   width: 100%;

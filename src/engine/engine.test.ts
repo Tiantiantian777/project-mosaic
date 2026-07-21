@@ -14,6 +14,8 @@ import {
   getEmptySlotIndices,
   largestConnectedRegion,
   placeSelectedTile,
+  rotateSelectedDraftTile,
+  rotateTile,
   scoreByColor,
   selectDraftTile,
   slideTile,
@@ -43,6 +45,7 @@ function makeSlidingState(board = makeSlidingBoard()): GameState {
     visibleTiles: [],
     drawPile: [],
     selectedDraftIndex: null,
+    selectedRotation: 0,
     slidesRemaining: 5,
     message: 'Sliding phase.',
   }
@@ -71,6 +74,54 @@ describe('fixed tile and board model', () => {
       expect(tile.colors[1]).toHaveLength(2)
       expect(tile.colors.flat()).toHaveLength(4)
     }
+  })
+})
+
+describe('placement-only tile rotation', () => {
+  it('rotates the selected color pattern and locks that orientation on placement', () => {
+    const initial = createInitialState(12)
+    const draftTile = initial.visibleTiles[0]
+    const selected = selectDraftTile(initial, 0)
+    const rotated = rotateSelectedDraftTile(selected, 'clockwise')
+    const placed = placeSelectedTile(rotated, 0)
+
+    expect(rotated.selectedRotation).toBe(1)
+    expect(rotated.visibleTiles[0]).toBe(draftTile)
+    expect(placed.board[0]).toEqual(rotateTile(draftTile, 1))
+    expect(placed.selectedRotation).toBe(0)
+  })
+
+  it('does not mutate the previous state when rotating a draft tile', () => {
+    const selected = selectDraftTile(createInitialState(8), 0)
+    const snapshot = structuredClone(selected)
+    const rotated = rotateSelectedDraftTile(selected, 'counterclockwise')
+
+    expect(rotated).not.toBe(selected)
+    expect(rotated.selectedRotation).toBe(3)
+    expect(selected).toEqual(snapshot)
+  })
+
+  it('keeps a placed tile locked during the rest of placement', () => {
+    const selected = selectDraftTile(createInitialState(4), 0)
+    const placed = placeSelectedTile(
+      rotateSelectedDraftTile(selected, 'clockwise'),
+      0,
+    )
+    const lockedTile = placed.board[0]
+
+    expect(rotateSelectedDraftTile(placed, 'clockwise')).toBe(placed)
+    expect(canSlide(placed, lockedTile!.id)).toBe(false)
+    expect(slideTile(placed, lockedTile!.id)).toBe(placed)
+
+    const nextDraft = selectDraftTile(placed, 0)
+    const nextRotated = rotateSelectedDraftTile(nextDraft, 'clockwise')
+    expect(nextRotated.board[0]).toBe(lockedTile)
+  })
+
+  it('rejects rotation during the sliding phase', () => {
+    const sliding = makeSlidingState()
+
+    expect(rotateSelectedDraftTile(sliding, 'clockwise')).toBe(sliding)
   })
 })
 
@@ -180,7 +231,7 @@ describe('8 by 8 mini-cell scoring', () => {
 })
 
 describe('obsolete model removal', () => {
-  it('does not expose rotation, collision placement, or polyomino APIs', () => {
+  it('does not expose arbitrary-shape rotation or polyomino placement APIs', () => {
     const tile = createDraftQueue(1, 1)[0]
 
     expect(Object.keys(tile).sort()).toEqual(['colors', 'id'])

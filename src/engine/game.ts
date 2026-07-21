@@ -1,6 +1,13 @@
 import { countTiles, createEmptyBoard, isTile, placeTileInSlot } from './board'
 import { dealInitialDraft } from './draft'
-import { BOARD_SLOT_COUNT, GameState, SLIDE_LIMIT } from './types'
+import { rotateTile } from './rotation'
+import {
+  BOARD_SLOT_COUNT,
+  GameState,
+  RotationDirection,
+  SLIDE_LIMIT,
+  TileRotation,
+} from './types'
 
 export function createInitialState(seed: number): GameState {
   const { visibleTiles, drawPile } = dealInitialDraft(seed)
@@ -11,6 +18,7 @@ export function createInitialState(seed: number): GameState {
     visibleTiles,
     drawPile,
     selectedDraftIndex: null,
+    selectedRotation: 0,
     slidesRemaining: SLIDE_LIMIT,
     message: 'Choose one of the three tiles, then choose a board slot.',
   }
@@ -31,7 +39,30 @@ export function selectDraftTile(
   return {
     ...state,
     selectedDraftIndex: draftIndex,
-    message: `${state.visibleTiles[draftIndex].id} selected. Choose an empty large slot.`,
+    selectedRotation:
+      state.selectedDraftIndex === draftIndex ? state.selectedRotation : 0,
+    message: `${state.visibleTiles[draftIndex].id} selected. Rotate it if desired, then choose an empty large slot.`,
+  }
+}
+
+export function rotateSelectedDraftTile(
+  state: GameState,
+  direction: RotationDirection,
+): GameState {
+  if (state.phase !== 'placement' || state.selectedDraftIndex === null) {
+    return state
+  }
+
+  const delta = direction === 'clockwise' ? 1 : -1
+  const selectedRotation = ((state.selectedRotation + delta + 4) %
+    4) as TileRotation
+  const selectedTile = state.visibleTiles[state.selectedDraftIndex]
+  if (!selectedTile) return state
+
+  return {
+    ...state,
+    selectedRotation,
+    message: `${selectedTile.id} rotated ${direction}. Its orientation locks when placed.`,
   }
 }
 
@@ -49,8 +80,9 @@ export function placeSelectedTile(
     return state
   }
 
-  const selectedTile = state.visibleTiles[state.selectedDraftIndex]
-  if (!selectedTile) return state
+  const draftTile = state.visibleTiles[state.selectedDraftIndex]
+  if (!draftTile) return state
+  const selectedTile = rotateTile(draftTile, state.selectedRotation)
 
   const board = placeTileInSlot(state.board, slotIndex, selectedTile)
   const placedTileCount = countTiles(board)
@@ -71,6 +103,7 @@ export function placeSelectedTile(
     visibleTiles: enteringSlidingPhase ? [] : visibleTiles,
     drawPile: enteringSlidingPhase ? [] : drawPile,
     selectedDraftIndex: null,
+    selectedRotation: 0,
     phase: enteringSlidingPhase ? 'sliding' : 'placement',
     message: enteringSlidingPhase
       ? 'Sliding phase: tap or drag a tile next to the empty slot.'
@@ -100,6 +133,7 @@ export function isPersistedGameState(value: unknown): value is GameState {
     !candidate.visibleTiles.every(isTile) ||
     !Array.isArray(candidate.drawPile) ||
     !candidate.drawPile.every(isTile) ||
+    ![0, 1, 2, 3].includes(Number(candidate.selectedRotation)) ||
     typeof candidate.slidesRemaining !== 'number' ||
     typeof candidate.message !== 'string'
   ) {
