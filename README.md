@@ -6,6 +6,13 @@ Project Mosaic is a mobile-first color strategy game built on a 4×4 sliding-puz
 
 ## Game rules
 
+### How to play guide
+
+- First-time visitors see a four-step visual introduction to choosing, placing, sliding, and scoring tiles.
+- The guide can be skipped or completed without changing the current game.
+- **How to play** remains available beside the score so the rules can be reopened at any time.
+- Completion is stored locally under `mosaic:onboarding-completed`. If browser storage is unavailable, the game still works and the introduction may appear again later.
+
 ### Tile selection and placement
 
 - The board contains sixteen large square slots.

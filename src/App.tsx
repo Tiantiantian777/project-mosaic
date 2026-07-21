@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { GameHUD } from './components/GameHUD'
+import { OnboardingModal } from './components/OnboardingModal'
 import { PuzzleBoard } from './components/PuzzleBoard'
 import { TileSelection } from './components/TileSelection'
 import {
@@ -13,6 +14,14 @@ import {
   selectDraftTile,
   slideTile,
 } from './engine'
+import {
+  closeOnboarding,
+  createOnboardingState,
+  markOnboardingCompleted,
+  nextOnboardingStep,
+  openOnboarding,
+  previousOnboardingStep,
+} from './onboarding/onboarding'
 
 const STORAGE_KEY = 'project-mosaic-state-v04'
 const DEFAULT_SEED = 20260719
@@ -33,10 +42,21 @@ function loadSavedGame(): GameState {
 function App() {
   const [game, setGame] = useState<GameState>(loadSavedGame)
   const [seedInput, setSeedInput] = useState(String(game.seed))
+  const [onboarding, setOnboarding] = useState(createOnboardingState)
+  const rulesButtonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(game))
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(game))
+    } catch {
+      // The game remains playable when browser storage is unavailable.
+    }
   }, [game])
+
+  const dismissOnboarding = useCallback(() => {
+    markOnboardingCompleted()
+    setOnboarding(closeOnboarding)
+  }, [])
 
   function startNewGame() {
     const parsedSeed = Number.parseInt(seedInput, 10)
@@ -46,7 +66,11 @@ function App() {
   }
 
   return (
-    <main className="app-shell">
+    <>
+      <main
+        className="app-shell"
+        aria-hidden={onboarding.isOpen ? true : undefined}
+      >
       <header className="hero">
         <div>
           <p className="eyebrow">Color strategy · sliding puzzle</p>
@@ -56,9 +80,19 @@ function App() {
             as many legal slides as you need.
           </p>
         </div>
-        <div className="hero-score" aria-label="Top-two color score">
-          <span>Top-two score</span>
-          <strong>{finalScore(game.board)}</strong>
+        <div className="hero-actions">
+          <button
+            type="button"
+            className="rules-button"
+            onClick={() => setOnboarding(openOnboarding)}
+            ref={rulesButtonRef}
+          >
+            How to play
+          </button>
+          <div className="hero-score" aria-label="Top-two color score">
+            <span>Top-two score</span>
+            <strong>{finalScore(game.board)}</strong>
+          </div>
         </div>
       </header>
 
@@ -136,7 +170,20 @@ function App() {
         Progress is saved on this device. Draft tiles may rotate before
         placement; placed tiles lock and never rotate afterward.
       </footer>
-    </main>
+      </main>
+
+      {onboarding.isOpen && (
+        <OnboardingModal
+          stepIndex={onboarding.stepIndex}
+          onBack={() => setOnboarding(previousOnboardingStep)}
+          onNext={() => setOnboarding(nextOnboardingStep)}
+          onClose={dismissOnboarding}
+          restoreFocusRef={
+            onboarding.openedManually ? rulesButtonRef : undefined
+          }
+        />
+      )}
+    </>
   )
 }
 
