@@ -5,7 +5,6 @@ import {
   BOARD_SLOT_COUNT,
   GameState,
   RotationDirection,
-  SLIDE_LIMIT,
   TileRotation,
 } from './types'
 
@@ -19,7 +18,6 @@ export function createInitialState(seed: number): GameState {
     drawPile,
     selectedDraftIndex: null,
     selectedRotation: 0,
-    slidesRemaining: SLIDE_LIMIT,
     message: 'Choose one of the three tiles, then choose a board slot.',
   }
 }
@@ -116,7 +114,7 @@ export function finishGame(state: GameState): GameState {
   return {
     ...state,
     phase: 'finished',
-    message: 'Mosaic finished.',
+    message: 'Mosaic submitted.',
   }
 }
 
@@ -134,7 +132,6 @@ export function isPersistedGameState(value: unknown): value is GameState {
     !Array.isArray(candidate.drawPile) ||
     !candidate.drawPile.every(isTile) ||
     ![0, 1, 2, 3].includes(Number(candidate.selectedRotation)) ||
-    typeof candidate.slidesRemaining !== 'number' ||
     typeof candidate.message !== 'string'
   ) {
     return false

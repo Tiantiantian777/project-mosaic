@@ -24,7 +24,8 @@ Project Mosaic is a mobile-first color strategy game built on a 4×4 sliding-puz
 - A move swaps that tile with the empty slot.
 - Tap a legal tile or drag it along its row or column toward the empty slot.
 - Sliding moves never rotate a tile or change its locked color orientation.
-- The current rules allow five slides. The player may also finish early.
+- The player may make as many legal slides as desired.
+- The mosaic is submitted only when the player chooses **Submit mosaic**.
 
 ### Scoring
 

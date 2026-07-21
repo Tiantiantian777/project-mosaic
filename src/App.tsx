@@ -14,7 +14,7 @@ import {
   slideTile,
 } from './engine'
 
-const STORAGE_KEY = 'project-mosaic-state-v03'
+const STORAGE_KEY = 'project-mosaic-state-v04'
 const DEFAULT_SEED = 20260719
 
 function loadSavedGame(): GameState {
@@ -53,7 +53,7 @@ function App() {
           <h1>Project Mosaic</h1>
           <p className="subtitle">
             Draft fifteen color-pattern tiles, then tune their connections with
-            five precise slides.
+            as many legal slides as you need.
           </p>
         </div>
         <div className="hero-score" aria-label="Top-two color score">
@@ -88,14 +88,14 @@ function App() {
         <section className="panel finish-panel">
           <div>
             <p className="section-kicker">Ready when you are</p>
-            <h2>Keep sliding or lock in the mosaic</h2>
+            <h2>Keep sliding or submit the mosaic</h2>
           </div>
           <button
             type="button"
             className="secondary-button"
             onClick={() => setGame((state) => finishGame(state))}
           >
-            Finish now
+            Submit mosaic
           </button>
         </section>
       )}

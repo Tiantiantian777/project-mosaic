@@ -36,7 +36,7 @@ export function GameHUD({ state }: { state: GameState }) {
         </div>
         <div className="status-card">
           <span>Slides</span>
-          <strong>{state.slidesRemaining}</strong>
+          <strong>Unlimited</strong>
         </div>
       </div>
 

@@ -23,7 +23,6 @@ export interface GameState {
   readonly drawPile: readonly Tile[]
   readonly selectedDraftIndex: number | null
   readonly selectedRotation: TileRotation
-  readonly slidesRemaining: number
   readonly message: string
 }
 
@@ -31,7 +30,6 @@ export const BOARD_DIMENSION = 4
 export const BOARD_SLOT_COUNT = BOARD_DIMENSION * BOARD_DIMENSION
 export const MINI_GRID_DIMENSION = BOARD_DIMENSION * 2
 export const VISIBLE_DRAFT_SIZE = 3
-export const SLIDE_LIMIT = 5
 
 export const COLORS: readonly Color[] = ['R', 'Y', 'G', 'B']
 

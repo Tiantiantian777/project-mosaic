@@ -11,6 +11,7 @@ import {
   createInitialState,
   expandBoardToMiniGrid,
   finalScore,
+  finishGame,
   getEmptySlotIndices,
   largestConnectedRegion,
   placeSelectedTile,
@@ -46,7 +47,6 @@ function makeSlidingState(board = makeSlidingBoard()): GameState {
     drawPile: [],
     selectedDraftIndex: null,
     selectedRotation: 0,
-    slidesRemaining: 5,
     message: 'Sliding phase.',
   }
 }
@@ -162,6 +162,26 @@ describe('15-puzzle movement', () => {
     expect(getEmptySlotIndices(firstMove.board)).toEqual([14])
     expect(getEmptySlotIndices(secondMove.board)).toEqual([10])
     expect(secondMove.board[14]?.id).toBe('tile-10')
+  })
+
+  it('allows unlimited legal slides without ending the game automatically', () => {
+    let state = makeSlidingState()
+
+    for (let move = 0; move < 20; move += 1) {
+      state = slideTile(state, 'tile-14')
+    }
+
+    expect(state.phase).toBe('sliding')
+    expect(canSlide(state, 'tile-14')).toBe(true)
+  })
+
+  it('finishes only when the player explicitly submits the mosaic', () => {
+    const state = makeSlidingState()
+    const submitted = finishGame(state)
+
+    expect(submitted.phase).toBe('finished')
+    expect(submitted.message).toBe('Mosaic submitted.')
+    expect(canSlide(submitted, 'tile-14')).toBe(false)
   })
 })
 
