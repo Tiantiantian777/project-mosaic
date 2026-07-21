@@ -28,16 +28,18 @@ const STEPS = [
     points: [
       'Its orientation locks as soon as it is placed.',
       'Place 15 tiles and leave exactly one slot empty.',
+      'Sliding starts only after the 15th tile is placed.',
     ],
   },
   {
-    kicker: 'Tune your layout',
-    title: 'Slide the puzzle',
+    kicker: 'After all 15 tiles are placed',
+    title: 'Then slide the puzzle',
     description:
-      'Tap or drag a tile next to the empty slot. It slides into the gap and leaves a new empty slot behind.',
+      'Sliding begins only when placement is complete and one board slot remains empty. Then tap or drag a neighboring tile into the gap.',
     points: [
-      'Only horizontal or vertical neighbors can slide.',
-      'Placed tiles cannot rotate or move freely.',
+      'Tiles cannot slide during the placement phase.',
+      'Only a horizontal or vertical neighbor of the empty slot can slide.',
+      'During sliding, tiles cannot rotate or move freely.',
     ],
   },
   {
@@ -109,11 +111,26 @@ function TutorialVisual({ stepIndex }: { stepIndex: number }) {
   if (stepIndex === 2) {
     return (
       <div className="tutorial-visual tutorial-slide" aria-hidden="true">
-        <span className="tutorial-slide-tile">
-          <Pattern colors={PATTERNS[1]} />
+        <span className="tutorial-slide-status">
+          15 tiles placed · 1 empty slot
         </span>
-        <span className="tutorial-slide-arrow">→</span>
-        <span className="tutorial-empty-slot" />
+        <span className="tutorial-slide-board">
+          {Array.from({ length: 16 }, (_, index) => {
+            if (index === 7) {
+              return <span className="tutorial-slide-empty" key={index} />
+            }
+
+            return (
+              <span
+                className={index === 6 ? 'tutorial-slide-source' : ''}
+                key={index}
+              >
+                <Pattern colors={PATTERNS[index % PATTERNS.length]} />
+              </span>
+            )
+          })}
+        </span>
+        <span className="tutorial-slide-unlocked">Sliding phase unlocked</span>
       </div>
     )
   }

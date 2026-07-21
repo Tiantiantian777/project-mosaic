@@ -31,9 +31,16 @@ describe('OnboardingModal', () => {
     const markup = renderStep(2)
 
     expect(markup).toContain('3 of 4')
-    expect(markup).toContain('Slide the puzzle')
-    expect(markup).toContain('Only horizontal or vertical neighbors can slide.')
-    expect(markup).toContain('Placed tiles cannot rotate or move freely.')
+    expect(markup).toContain('After all 15 tiles are placed')
+    expect(markup).toContain('Then slide the puzzle')
+    expect(markup).toContain('15 tiles placed · 1 empty slot')
+    expect(markup).toContain('Tiles cannot slide during the placement phase.')
+    expect(markup).toContain(
+      'Only a horizontal or vertical neighbor of the empty slot can slide.',
+    )
+    expect(markup).toContain(
+      'During sliding, tiles cannot rotate or move freely.',
+    )
   })
 
   it('ends with scoring guidance and a start action', () => {
