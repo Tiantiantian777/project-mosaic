@@ -526,22 +526,6 @@ h2 {
   color: #f5f7fb;
 }
 
-.result-panel {
-  text-align: center;
-}
-
-.result-panel h2 {
-  font-size: clamp(2.5rem, 9vw, 4rem);
-}
-
-.result-panel p:not(.section-kicker) {
-  max-width: 500px;
-  margin-right: auto;
-  margin-left: auto;
-  color: #aeb7c8;
-  line-height: 1.55;
-}
-
 .seed-row {
   display: flex;
   gap: 7px;
@@ -574,6 +558,114 @@ footer {
   font-size: 0.78rem;
   line-height: 1.45;
   text-align: center;
+}
+
+.endgame-backdrop {
+  position: fixed;
+  z-index: 110;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding:
+    max(16px, env(safe-area-inset-top))
+    max(12px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-left));
+  background: rgba(4, 6, 10, 0.86);
+  backdrop-filter: blur(12px);
+  animation: onboarding-fade-in 180ms ease-out;
+}
+
+.endgame-dialog {
+  width: min(100%, 470px);
+  padding: clamp(24px, 6vw, 38px);
+  border: 1px solid #43506c;
+  border-radius: clamp(22px, 5vw, 30px);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(87, 136, 235, 0.2), transparent 20rem),
+    #131720;
+  box-shadow: 0 34px 100px rgba(0, 0, 0, 0.62);
+  text-align: center;
+  animation: onboarding-step-in 180ms ease-out;
+}
+
+.endgame-dialog h2 {
+  color: #c6cee0;
+  font-size: 0.9rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.player-result {
+  margin: 8px 0 24px;
+  color: #f7f8ff;
+  font-size: clamp(4.5rem, 18vw, 6.5rem);
+  font-weight: 900;
+  letter-spacing: -0.07em;
+  line-height: 0.92;
+}
+
+.endgame-result-copy {
+  min-height: 122px;
+  padding: 22px 12px;
+  border-top: 1px solid #30394c;
+  border-bottom: 1px solid #30394c;
+}
+
+.reachable-result,
+.endgame-message,
+.endgame-invitation {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.reachable-result {
+  display: grid;
+  gap: 3px;
+  margin-bottom: 12px;
+  color: #c8d1e6;
+  line-height: 1.35;
+}
+
+.reachable-result strong {
+  color: #8edbb9;
+  font-size: clamp(2rem, 8vw, 2.7rem);
+  line-height: 1;
+}
+
+.reachable-result span {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.endgame-message {
+  max-width: 330px;
+  margin-bottom: 12px;
+  color: #e3e7f3;
+  font-size: 1.18rem;
+  font-weight: 800;
+  line-height: 1.38;
+}
+
+.endgame-invitation {
+  margin-bottom: 0;
+  color: #929eb4;
+  font-weight: 750;
+}
+
+.endgame-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 9px;
+  margin-top: 24px;
+}
+
+.endgame-actions .primary-button,
+.endgame-actions .secondary-button {
+  width: 100%;
+  min-height: 52px;
+  margin: 0;
 }
 
 .onboarding-backdrop {
@@ -1038,6 +1130,25 @@ footer {
   .onboarding-backdrop {
     align-items: start;
     padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
+  }
+
+  .endgame-backdrop {
+    align-items: center;
+    padding: max(9px, env(safe-area-inset-top)) 9px max(9px, env(safe-area-inset-bottom));
+  }
+
+  .endgame-dialog {
+    padding: 24px 17px 19px;
+    border-radius: 22px;
+  }
+
+  .endgame-result-copy {
+    min-height: 112px;
+    padding: 18px 7px;
+  }
+
+  .endgame-actions {
+    grid-template-columns: 1fr;
   }
 
   .onboarding-dialog {

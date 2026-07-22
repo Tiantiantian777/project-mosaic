@@ -14,12 +14,14 @@ import {
   finishGame,
   getEmptySlotIndices,
   largestConnectedRegion,
+  isPersistedGameState,
   placeSelectedTile,
   rotateSelectedDraftTile,
   rotateTile,
   scoreByColor,
   selectDraftTile,
   slideTile,
+  slidingStatesEqual,
 } from './index'
 
 function makeTile(
@@ -39,6 +41,7 @@ function makeSlidingBoard(emptyIndex = 15): Board {
 }
 
 function makeSlidingState(board = makeSlidingBoard()): GameState {
+  const slidingInitialState = { board: structuredClone(board) }
   return {
     phase: 'sliding',
     seed: 1,
@@ -47,6 +50,7 @@ function makeSlidingState(board = makeSlidingBoard()): GameState {
     drawPile: [],
     selectedDraftIndex: null,
     selectedRotation: 0,
+    slidingInitialState,
     message: 'Sliding phase.',
   }
 }
@@ -63,6 +67,20 @@ describe('fixed tile and board model', () => {
     expect(state.phase).toBe('sliding')
     expect(countTiles(state.board)).toBe(15)
     expect(getEmptySlotIndices(state.board)).toEqual([15])
+    expect(state.slidingInitialState).not.toBeNull()
+    expect(state.slidingInitialState!.board).not.toBe(state.board)
+    expect(
+      slidingStatesEqual(state.slidingInitialState!, { board: state.board }),
+    ).toBe(true)
+
+    const initialSnapshot = structuredClone(state.slidingInitialState)
+    const moved = slideTile(state, state.board[14]!.id)
+    expect(moved.slidingInitialState).toEqual(initialSnapshot)
+    expect(isPersistedGameState(state)).toBe(true)
+
+    const missingSnapshot: Record<string, unknown> = { ...state }
+    Reflect.deleteProperty(missingSnapshot, 'slidingInitialState')
+    expect(isPersistedGameState(missingSnapshot)).toBe(false)
   })
 
   it('gives every tile exactly four colors in a 2 by 2 pattern', () => {

@@ -6,14 +6,26 @@ export type TileColors = readonly [
 ]
 
 export interface Tile {
-  id: string
-  colors: TileColors
+  readonly id: string
+  readonly colors: TileColors
 }
 
 export type Board = readonly (Tile | null)[]
 export type Phase = 'placement' | 'sliding' | 'finished'
 export type TileRotation = 0 | 1 | 2 | 3
 export type RotationDirection = 'clockwise' | 'counterclockwise'
+export type SlideDirection = 'up' | 'down' | 'left' | 'right'
+
+export interface SlidingState {
+  readonly board: Board
+}
+
+export interface SolverMove {
+  readonly tileId: string
+  readonly fromIndex: number
+  readonly toIndex: number
+  readonly direction: SlideDirection
+}
 
 export interface GameState {
   readonly phase: Phase
@@ -23,12 +35,14 @@ export interface GameState {
   readonly drawPile: readonly Tile[]
   readonly selectedDraftIndex: number | null
   readonly selectedRotation: TileRotation
+  readonly slidingInitialState: SlidingState | null
   readonly message: string
 }
 
 export const BOARD_DIMENSION = 4
 export const BOARD_SLOT_COUNT = BOARD_DIMENSION * BOARD_DIMENSION
-export const MINI_GRID_DIMENSION = BOARD_DIMENSION * 2
+export const TILE_MINI_DIMENSION = 2
+export const MINI_GRID_DIMENSION = BOARD_DIMENSION * TILE_MINI_DIMENSION
 export const VISIBLE_DRAFT_SIZE = 3
 
 export const COLORS: readonly Color[] = ['R', 'Y', 'G', 'B']

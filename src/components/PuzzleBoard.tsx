@@ -207,6 +207,7 @@ export function PuzzleBoard({ state, onPlace, onSlide }: PuzzleBoardProps) {
       >
         <div className="board-slot-layer">
           {Array.from({ length: BOARD_SLOT_COUNT }, (_, slotIndex) => {
+            const coordinates = toBoardCoordinates(slotIndex)
             const openForPlacement =
               state.phase === 'placement' &&
               state.selectedDraftIndex !== null &&
@@ -223,7 +224,7 @@ export function PuzzleBoard({ state, onPlace, onSlide }: PuzzleBoardProps) {
                 disabled={!openForPlacement}
                 tabIndex={openForPlacement ? 0 : -1}
                 aria-hidden={!openForPlacement}
-                aria-label={`Place tile in row ${Math.floor(slotIndex / 4) + 1}, column ${(slotIndex % 4) + 1}`}
+                aria-label={`Place tile in row ${coordinates.row + 1}, column ${coordinates.column + 1}`}
                 onClick={() => onPlace(slotIndex)}
               >
                 {openForPlacement ? <span>+</span> : null}

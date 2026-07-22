@@ -2,6 +2,7 @@ import {
   BOARD_DIMENSION,
   BOARD_SLOT_COUNT,
   Board,
+  TILE_MINI_DIMENSION,
   Tile,
   TileColors,
 } from './types'
@@ -69,12 +70,12 @@ export function placeTileInSlot(
 }
 
 export function isTileColors(value: unknown): value is TileColors {
-  if (!Array.isArray(value) || value.length !== 2) return false
+  if (!Array.isArray(value) || value.length !== TILE_MINI_DIMENSION) return false
 
   return value.every(
     (row) =>
       Array.isArray(row) &&
-      row.length === 2 &&
+      row.length === TILE_MINI_DIMENSION &&
       row.every((color) => ['R', 'Y', 'G', 'B'].includes(String(color))),
   )
 }

@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest run",
+    "benchmark:solver": "vitest run src/solver/solver.benchmark.test.ts --reporter=verbose",
     "preview": "vite preview"
   },
   "dependencies": {

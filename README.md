@@ -33,6 +33,8 @@ Project Mosaic is a mobile-first color strategy game built on a 4×4 sliding-puz
 - Sliding moves never rotate a tile or change its locked color orientation.
 - The player may make as many legal slides as desired.
 - The mosaic is submitted only when the player chooses **Submit mosaic**.
+- Submit opens a summary; **Keep Trying** returns to the same submitted board for unlimited additional slides.
+- **New Game** starts a different seeded puzzle.
 
 ### Scoring
 
@@ -49,11 +51,20 @@ Each 2×2 tile pattern expands the 4×4 large-slot board into an effective 8×8 
 src/
   components/   React presentation and pointer interaction
   data/         Fixed 2×2 color-pattern definitions
+  endgame/      Pure truthful-result display rules
   engine/       Pure, immutable game rules and scoring
+  hooks/        Web Worker solver lifecycle integration
+  solver/       Pure search, heuristic, keys, and verification
   styles/       Responsive visual system
 ```
 
-The board array is the single source of truth for tile positions. Engine modules do not import React, and UI components call the engine for placement and slide legality.
+The board array is the single source of truth for tile positions. Engine modules do not import React, and UI components and the Developer Solver call the same engine for slide legality and scoring. The board at the start of sliding is preserved as `slidingInitialState`.
+
+## Developer Solver
+
+The first Developer Solver is a budgeted beam search that runs in a Web Worker. Every reported target is replayed and verified from `slidingInitialState` with the canonical movement and scoring engine. “Best score found” is not a claim of global optimality.
+
+See [docs/DEVELOPER_SOLVER.md](docs/DEVELOPER_SOLVER.md) for representation, search, verification, lifecycle, display rules, limitations, and extension points.
 
 ## Local development
 
@@ -68,6 +79,7 @@ npm run dev
 npm run lint
 npm run test
 npm run build
+npm run benchmark:solver
 ```
 
 ## Deployment

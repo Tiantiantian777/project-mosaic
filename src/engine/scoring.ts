@@ -1,12 +1,25 @@
 import {
+  BOARD_DIMENSION,
   Board,
   COLORS,
   Color,
   MINI_GRID_DIMENSION,
+  TILE_MINI_DIMENSION,
 } from './types'
 
 export type MiniCell = Color | null
 export type MiniGrid = MiniCell[][]
+
+export interface ColorAnalysis {
+  readonly largestRegion: number
+  readonly componentSizes: readonly number[]
+}
+
+export interface BoardAnalysis {
+  readonly totalScore: number
+  readonly colorStats: Record<Color, ColorAnalysis>
+  readonly scoringColors: readonly Color[]
+}
 
 export function expandBoardToMiniGrid(board: Board): MiniGrid {
   const grid = Array.from({ length: MINI_GRID_DIMENSION }, () =>
@@ -16,13 +29,18 @@ export function expandBoardToMiniGrid(board: Board): MiniGrid {
   board.forEach((tile, slotIndex) => {
     if (!tile) return
 
-    const slotRow = Math.floor(slotIndex / 4)
-    const slotColumn = slotIndex % 4
+    const slotRow = Math.floor(slotIndex / BOARD_DIMENSION)
+    const slotColumn = slotIndex % BOARD_DIMENSION
 
-    for (let miniRow = 0; miniRow < 2; miniRow += 1) {
-      for (let miniColumn = 0; miniColumn < 2; miniColumn += 1) {
-        grid[slotRow * 2 + miniRow][slotColumn * 2 + miniColumn] =
-          tile.colors[miniRow][miniColumn]
+    for (let miniRow = 0; miniRow < TILE_MINI_DIMENSION; miniRow += 1) {
+      for (
+        let miniColumn = 0;
+        miniColumn < TILE_MINI_DIMENSION;
+        miniColumn += 1
+      ) {
+        grid[slotRow * TILE_MINI_DIMENSION + miniRow][
+          slotColumn * TILE_MINI_DIMENSION + miniColumn
+        ] = tile.colors[miniRow][miniColumn]
       }
     }
   })
@@ -30,9 +48,12 @@ export function expandBoardToMiniGrid(board: Board): MiniGrid {
   return grid
 }
 
-export function largestConnectedRegion(grid: MiniGrid, color: Color): number {
+export function connectedComponentSizes(
+  grid: MiniGrid,
+  color: Color,
+): number[] {
   const visited = new Set<string>()
-  let largest = 0
+  const componentSizes: number[] = []
 
   for (let row = 0; row < grid.length; row += 1) {
     for (let column = 0; column < grid[row].length; column += 1) {
@@ -42,9 +63,11 @@ export function largestConnectedRegion(grid: MiniGrid, color: Color): number {
       const queue: Array<[number, number]> = [[row, column]]
       visited.add(startKey)
       let regionSize = 0
+      let queueIndex = 0
 
-      while (queue.length > 0) {
-        const [currentRow, currentColumn] = queue.shift()!
+      while (queueIndex < queue.length) {
+        const [currentRow, currentColumn] = queue[queueIndex]
+        queueIndex += 1
         regionSize += 1
 
         const neighbors: Array<[number, number]> = [
@@ -73,27 +96,58 @@ export function largestConnectedRegion(grid: MiniGrid, color: Color): number {
         }
       }
 
-      largest = Math.max(largest, regionSize)
+      componentSizes.push(regionSize)
     }
   }
 
-  return largest
+  return componentSizes.sort((first, second) => second - first)
+}
+
+export function largestConnectedRegion(grid: MiniGrid, color: Color): number {
+  return connectedComponentSizes(grid, color)[0] ?? 0
+}
+
+export function analyzeBoard(board: Board): BoardAnalysis {
+  const grid = expandBoardToMiniGrid(board)
+  const colorStats = COLORS.reduce<Record<Color, ColorAnalysis>>(
+    (stats, color) => {
+      const componentSizes = connectedComponentSizes(grid, color)
+      stats[color] = {
+        largestRegion: componentSizes[0] ?? 0,
+        componentSizes,
+      }
+      return stats
+    },
+    {
+      R: { largestRegion: 0, componentSizes: [] },
+      Y: { largestRegion: 0, componentSizes: [] },
+      G: { largestRegion: 0, componentSizes: [] },
+      B: { largestRegion: 0, componentSizes: [] },
+    },
+  )
+  const scoringColors = [...COLORS]
+    .sort(
+      (first, second) =>
+        colorStats[second].largestRegion - colorStats[first].largestRegion ||
+        COLORS.indexOf(first) - COLORS.indexOf(second),
+    )
+    .slice(0, 2)
+  const totalScore = scoringColors.reduce(
+    (total, color) => total + colorStats[color].largestRegion,
+    0,
+  )
+
+  return { totalScore, colorStats, scoringColors }
 }
 
 export function scoreByColor(board: Board): Record<Color, number> {
-  const grid = expandBoardToMiniGrid(board)
-  return COLORS.reduce<Record<Color, number>>(
-    (scores, color) => ({
-      ...scores,
-      [color]: largestConnectedRegion(grid, color),
-    }),
-    { R: 0, Y: 0, G: 0, B: 0 },
-  )
+  const analysis = analyzeBoard(board)
+  return COLORS.reduce<Record<Color, number>>((scores, color) => {
+    scores[color] = analysis.colorStats[color].largestRegion
+    return scores
+  }, { R: 0, Y: 0, G: 0, B: 0 })
 }
 
 export function finalScore(board: Board): number {
-  return Object.values(scoreByColor(board))
-    .sort((first, second) => second - first)
-    .slice(0, 2)
-    .reduce((total, score) => total + score, 0)
+  return analyzeBoard(board).totalScore
 }

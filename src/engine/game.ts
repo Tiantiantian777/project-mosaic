@@ -2,6 +2,11 @@ import { countTiles, createEmptyBoard, isTile, placeTileInSlot } from './board'
 import { dealInitialDraft } from './draft'
 import { rotateTile } from './rotation'
 import {
+  createSlidingState,
+  haveSameTileCatalog,
+  isSlidingState,
+} from './slidingState'
+import {
   BOARD_SLOT_COUNT,
   GameState,
   RotationDirection,
@@ -18,8 +23,20 @@ export function createInitialState(seed: number): GameState {
     drawPile,
     selectedDraftIndex: null,
     selectedRotation: 0,
+    slidingInitialState: null,
     message: 'Choose one of the three tiles, then choose a board slot.',
   }
+}
+
+export function createNextGameSeed(
+  currentSeed: number,
+  entropy: number,
+): number {
+  const mixed = Math.imul(
+    (currentSeed ^ entropy ^ 0x9e3779b9) >>> 0,
+    0x85ebca6b,
+  ) >>> 0
+  return mixed === (currentSeed >>> 0) ? (mixed + 1) >>> 0 : mixed
 }
 
 export function selectDraftTile(
@@ -102,6 +119,9 @@ export function placeSelectedTile(
     drawPile: enteringSlidingPhase ? [] : drawPile,
     selectedDraftIndex: null,
     selectedRotation: 0,
+    slidingInitialState: enteringSlidingPhase
+      ? createSlidingState(board)
+      : state.slidingInitialState,
     phase: enteringSlidingPhase ? 'sliding' : 'placement',
     message: enteringSlidingPhase
       ? 'Sliding phase: tap or drag a tile next to the empty slot.'
@@ -115,6 +135,15 @@ export function finishGame(state: GameState): GameState {
     ...state,
     phase: 'finished',
     message: 'Mosaic submitted.',
+  }
+}
+
+export function resumeGame(state: GameState): GameState {
+  if (state.phase !== 'finished') return state
+  return {
+    ...state,
+    phase: 'sliding',
+    message: 'Keep trying: slide any glowing tile into the empty slot.',
   }
 }
 
@@ -132,12 +161,28 @@ export function isPersistedGameState(value: unknown): value is GameState {
     !Array.isArray(candidate.drawPile) ||
     !candidate.drawPile.every(isTile) ||
     ![0, 1, 2, 3].includes(Number(candidate.selectedRotation)) ||
+    !('slidingInitialState' in candidate) ||
     typeof candidate.message !== 'string'
   ) {
     return false
   }
 
   const placedTiles = countTiles(candidate.board)
-  if (candidate.phase === 'placement') return placedTiles < 15
-  return placedTiles === 15
+  if (candidate.phase === 'placement') {
+    return placedTiles < 15 && candidate.slidingInitialState === null
+  }
+
+  const currentSlidingState = { board: candidate.board }
+  if (
+    placedTiles !== 15 ||
+    !isSlidingState(currentSlidingState) ||
+    !isSlidingState(candidate.slidingInitialState)
+  ) {
+    return false
+  }
+
+  return haveSameTileCatalog(
+    currentSlidingState,
+    candidate.slidingInitialState,
+  )
 }
